@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>素数占い：あんたの運勢、教えちゃる！</title>
+    <style>
+      /* ここからデザインの調整やで！ */
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #fce4ec; /* 可愛いピンク系の背景 */
+        color: #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+        line-height: 1.6;
+      }
+      .container {
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        border: 2px solid #ff80ab; /* 縁取り */
+      }
+      h1 {
+        color: #d81b60; /* 目を引く赤色 */
+        margin-bottom: 25px;
+        font-size: 1.8em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .input-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        color: #4a148c; /* ちょっと深い紫色 */
+        font-weight: bold;
+      }
+      input[type="date"] {
+        width: calc(100% - 20px);
+        padding: 12px;
+        border: 2px solid #e040fb; /* 紫系の線 */
+        border-radius: 8px;
+        font-size: 1.1em;
+        background-color: #f3e5f5; /* 薄い紫色 */
+        color: #4a148c;
+      }
+      button {
+        background-color: #ff4081; /* 鮮やかなピンク */
+        color: white;
+        padding: 14px 25px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2em;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      button:hover {
+        background-color: #d81b60; /* ホバーで濃くする */
+        transform: translateY(-2px);
+      }
+      #result {
+        margin-top: 30px;
+        background-color: #fff8e1; /* 薄い黄色 */
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px dashed #ffd700; /* 点線の縁取り */
+        text-align: left;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        font-size: 1.05em;
+        color: #5d4037; /* 茶色系の文字色 */
+        display: none; /* 最初は非表示 */
+      }
+      #result h2 {
+        color: #d81b60;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+      }
+      #result p {
+        margin-bottom: 10px;
+      }
+      #result strong {
+        color: #4a148c;
+      }
+      /* スクロール感を出すためのちょっと長めのコンテンツ */
+      .result-section {
+        margin-bottom: 20px;
+      }
+      .result-section h3 {
+        color: #ff4081;
+        font-size: 1.2em;
+        border-bottom: 2px solid #ffc1e3;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>素数占い：あんたの運勢、教えちゃる！</h1>
+      <div class="input-group">
+        <label for="birthdate">あんたの誕生日、教えてや！</label>
+        <input type="date" id="birthdate" />
+      </div>
+      <button onclick="fortuneTell()">占うで！</button>
+
+      <div id="result">
+        <h2>あんたの運勢、これでどうや！</h2>
+        <p>あんたの素数、これで決まりや！</p>
+        <div id="primeNumberResult"></div>
+
+        <div class="result-section">
+          <h3>性格</h3>
+          <p id="personality"></p>
+        </div>
+        <div class="result-section">
+          <h3>仕事</h3>
+          <p id="work"></p>
+        </div>
+        <div class="result-section">
+          <h3>恋愛</h3>
+          <p id="love"></p>
+        </div>
+        <div class="result-section">
+          <h3>健康</h3>
+          <p id="health"></p>
+        </div>
+        <div class="result-section">
+          <h3>金運</h3>
+          <p id="money"></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ここからJavaScriptのコードやで！
+
+      // 各素数の意味を関西弁で定義しとるで！
+      const primeMeanings = {
+        2: {
+          personality:
+            "穏やかで協調性があり、周りの人と仲良くするのが一番好きなんや。揉め事は好まへん平和主義者やな。人の気持ちを察するのが得意で、優しい心を持ってるんやで。",
+          work: "チームで協力したり、誰かをサポートしたりする仕事で本領発揮や！カウンセラー、秘書、先生、お店屋さんとか、人と関わって支える仕事が向いてるで。競争ばっかりの場所はあんまり得意やないわ。",
+          love: "優しくて、相手を包み込むような愛情の持ち主やで。安定した関係を望んでて、パートナーとの深い絆を育むことに喜びを感じるタイプやな。裏切りとかには敏感やから、気をつけや。",
+          health:
+            "ストレスを溜め込みやすいとこあるから、ちゃんとリラックスできる時間を作るんが大事やで。心と体のバランスを保つことが健康の秘訣やな。",
+          money:
+            "危険なことには手を出さんと、堅実に貯金したり運用したりするタイプや。安定した収入を好んで、無駄遣いはあんまりせえへんやろ。計画的にお金と付き合うのが上手やで。",
+        },
+        3: {
+          personality:
+            "明るくて好奇心旺盛！いつも新しいアイデアを探してる、クリエイティブな心の持ち主やな。自分の考えを表現するのが得意で、人を楽しませるのが好きやから、場の空気を盛り上げるんも上手いんやで。",
+          work: "企画、デザイン、芸能界、芸術、教育、広報とか、アイデアや表現力が問われる仕事でピカッと光るで！決まりきった作業より、自由に発想できる環境が性に合ってるんやな。",
+          love: "楽しくて刺激的な恋を求める、ロマンチストな一面もあるで。相手を喜ばせるんも得意で、おしゃべりも上手いんや。ちょっと飽きっぽいとこあるから、いつも新鮮な気持ちでいられる関係が理想やろな。",
+          health:
+            "元気いっぱいな反面、気分にムラが出やすいことも。ストレスは適度な運動とか趣味で発散するとええで。喉とか声のケアも忘れんようにしときや。",
+          money:
+            "ついつい衝動買いしたり、趣味にお金を使ったりしがちやけど、それが新しいチャンスに繋がることもあるんや。お金を稼ぐアイデアも豊富やから、それを形にできたら金運も上がるで！",
+        },
+        5: {
+          // あんたのお気に入り！完璧を追加！
+          personality:
+            "これぞ**完璧**を目指す心の持ち主や！あらゆる物事において最高の状態を目指すんやな。そんで、自由をこよなく愛し、束縛されるんは大嫌いや！好奇心旺盛で、変化を恐れんと、いつも新しい体験を追い求める探求者やで。",
+          work: "変化の多い場所とか、色んな経験ができる仕事で才能が光るで！研究開発、旅行関係、フリーランス、コンサルタント、企画とか、型にはまらんと自分の探求心を生かせる場所がぴったりや。",
+          love: "刺激的で新鮮な恋を求めるんやな。束縛されるんは嫌いやから、お互いの自由を尊重し合えるパートナーがええやろ。マンネリには注意しいや。サプライズとか、非日常的なデートを楽しめるんやないか。",
+          health:
+            "めっちゃ活動的やから、体を酷使しすぎへんように気つけや。五感をフル活用するから、たまには感覚を休ませる時間も大事やで。ストレスは適度な運動とか旅行で解消するのが効果的やな。",
+          money:
+            "稼ぐ力はあるけど、新しい経験や探求のためにお金を使うんを惜しまへんタイプやな。投資とか冒険的な選択肢にも興味を持つことも。完璧な財産作りを目指しつつ、流動的に使えるお金を持ってる方が安心やろな。",
+        },
+        7: {
+          // ラッキーマンやで！
+          personality:
+            "物事の本質を見抜く、深い知性を持ってるんやで。一人でじっくり考える時間が好きで、神秘的なことや精神世界に興味を持つことも。不思議な直感力で、ええ運気を引き寄せよるんやな。まさに**ラッキーマン**や！",
+          work: "研究者、哲学者、カウンセラー、探偵、占い師、専門職とか、深く物事を追求する仕事や、人の心に寄り添う仕事が向いてるで。一人で集中できる環境やと、最高の力を発揮できるやろな。",
+          love: "精神的な繋がりをめっちゃ大事にするタイプやで。上辺だけの関係じゃ満足せえへんし、深く分かり合えるパートナーを求めるんや。ちょっとミステリアスな雰囲気で、相手を惹きつける魅力があるんやな。",
+          health:
+            "精神的なストレスが体に出やすいから、瞑想したり、自然に触れたりして、心を落ち着かせる時間を持つんが健康維持に繋がるで。睡眠をしっかり取ることも大事やからな。",
+          money:
+            "運に恵まれることが多くて、思わぬ臨時収入があるかもしれへんで。けど、お金儲けそのものにはあんまり執着せんと、心の豊かさを重視する傾向があるな。直感を信じて投資するんもええかもな。",
+        },
+        11: {
+          personality:
+            "鋭い直感力と豊かなひらめきを持つ、天性のインスピレーターやな。感受性が高くて、たまに周りのエネルギーに敏感になりすぎることがあるかもしれへん。理想主義者で、新しい時代を切り開くような先見の明を持ってるんやで。",
+          work: "クリエイティブディレクター、発明家、アーティスト、デザイナー、ヒーラー、スピリチュアルな分野とか、型にはまらんと閃きを形にする仕事で本領発揮や！人に影響を与える力も強いんやで。",
+          love: "精神的な繋がりを一番大事にしてて、深い共鳴を感じる相手に強く惹かれるんや。魂のパートナーシップを求める傾向があって、自由な関係を築くこともあるやろな。直感で運命の相手を見つけるんやで。",
+          health:
+            "精神的な疲れが体に出やすいから、無理は禁物やで。瞑想したりリラックスできる時間を持ったりすると、エネルギーのバランスが整うで。電化製品の使いすぎにも気つけや。",
+          money:
+            "お金自体への執着は少ないけど、直感的なひらめきやインスピレーションが金運に結びつくことがあるんや。予期せぬチャンスや、新しいアイデアが収入を生む可能性を秘めてるで！",
+        },
+        13: {
+          // 未知なる凄いパワーやで！
+          personality:
+            "常識にとらわれんと、古い殻を破って新しい価値を創造する改革者やな。困難を恐れんと、むしろそれを成長の糧にするんや。底知れないパワーと、物事の本質を見抜く深い洞察力を秘めてるんやで。まさに**未知なる凄いパワー**や！",
+          work: "革命的なアイデアが求められる分野、新しいビジネスの立ち上げ、古いシステムを改革する仕事、あるいは危機管理や立て直しに関わる仕事で才能が光るで。難しい状況を乗り越えるたびに強くなるんやな。",
+          love: "型にはまらへん情熱的な恋を求める傾向があるで。相手との関係でも、いつも進化や変化を求めるんや。困難を一緒に乗り越えることで、もっと強い絆を築けるやろな。刺激的でドラマチックな展開が好きやで。",
+          health:
+            "めっちゃ強いストレスがかかる状況でも耐え抜く力はあるけど、無理しすぎると心身に大きな負担がかかるからな。定期的に気分転換したり、体をデトックスしたりするんがええで。",
+          money:
+            "波乱もあるかもしれへんけど、大きな変化の後に急激な金運アップを経験することがあるで。リスクを恐れんと新しい投資や事業に挑戦することで、未知の財産を築く可能性を秘めてるんや。",
+        },
+        17: {
+          // いつまでも青春やで！
+          personality:
+            "情熱的で、いつも新しいことに挑戦する、若々しい精神の持ち主やな。型にはまらんと、自分の道を切り開く独立心が旺盛や。いくつになっても好奇心と探求心を忘れんと、**無限の可能性**を秘めてるんやで。まさに**いつまでも青春！**",
+          work: "ベンチャー企業、新しいプロジェクトの立ち上げ、クリエイティブな分野、教育、スポーツとか、いつも新しい刺激がある場所で能力を発揮するで。決まりきった作業より、変化と挑戦のある環境で輝くやろな。",
+          love: "いつまでも新鮮な関係を求める、情熱的な恋が好きやな。マンネリは嫌いやから、共通の趣味とか新しい体験を一緒にすることで関係を深めるんや。若々しい感性で、いつまでも恋する気持ちを忘れへんやろな。",
+          health:
+            "活動量が多いから、無理して体調崩さへんように気つけや。いつも若々しい気持ちでいるんが、体の健康にも繋がるで。適度な運動と、心の満足感を大事にしときや。",
+          money:
+            "稼ぐ力はあるんやけど、新しいことへの投資や趣味にお金を惜しまへん傾向があるな。その投資が新しいビジネスチャンスや金運に繋がることもあるんやで。若々しいアイデアが金運を引き寄せよるんや。",
+        },
+        19: {
+          // 実現と完成の星やで！
+          personality:
+            "目標に向かって真っ直ぐ進む強い意志と、それを必ず実現させる実行力を持ってるんやで。困難を乗り越えるリーダーシップを発揮して、物事を最終的に**完成**させることに喜びを感じるタイプやな。責任感が強くて、頼りになる存在やで。",
+          work: "プロジェクトリーダー、社長さん、起業家、職人さん、研究者、スポーツ選手とか、目標達成とか結果が求められる分野で圧倒的な力を発揮するで。難しい課題ほど燃え上がって、周りの人を巻き込みながら達成へと導くんや。",
+          love: "目標志向で、関係を深めることに対しても真剣なんやな。信頼と安定を重視して、長い付き合いを築こうとするで。パートナーを守ってリードする傾向があるけど、たまには相手の意見を聞くことも大切やで。",
+          health:
+            "ストイックに目標達成を目指しすぎるあまり、心身を酷使しやすいから気つけや。適度な休憩と、リラックスできる時間を持つんが、長く高いパフォーマンスを維持するためには絶対必要やで。",
+          money:
+            "強い目的意識と実行力で、自分の力で大きな財産を築くことができるで。計画的に資産を増やして、目標を達成することで、安定した金運を引き寄せよるんや。投資とか事業で成功を収める可能性も高いで！",
+        },
+      };
+
+      // 素数判定の関数やで！
+      function isPrime(num) {
+        if (num <= 1) return false;
+        for (let i = 2; i * i <= num; i++) {
+          if (num % i === 0) return false;
+        }
+        return true;
+      }
+
+      // 素因数分解の関数やで！
+      function primeFactorization(num) {
+        let factors = {}; // {素数: 出現回数} の形で保存
+        let tempNum = num;
+
+        // 2で割り続ける
+        while (tempNum % 2 === 0) {
+          factors[2] = (factors[2] || 0) + 1;
+          tempNum /= 2;
+        }
+
+        // 3以上の奇数で割り続ける
+        for (let i = 3; i * i <= tempNum; i += 2) {
+          while (tempNum % i === 0) {
+            factors[i] = (factors[i] || 0) + 1;
+            tempNum /= i;
+          }
+        }
+
+        // 最後に残った数が1より大きい場合は、それが素数
+        if (tempNum > 2) {
+          factors[tempNum] = (factors[tempNum] || 0) + 1;
+        }
+        return factors;
+      }
+
+      // 占いのメイン処理やで！
+      function fortuneTell() {
+        const birthdateInput = document.getElementById("birthdate");
+        const birthdate = birthdateInput.value; // 例: "1990-05-23"
+
+        if (!birthdate) {
+          alert("誕生日を入力してや！");
+          return;
+        }
+
+        // 誕生日を数字に変換するで！ (例: 19900523 に連結)
+        const dateParts = birthdate.split("-"); // ["1990", "05", "23"]
+        let combinedNumber = parseInt(dateParts.join("")); // 19900523
+
+        // 数字が大きすぎる場合の調整（今回は誕生日の合計値でやるで！）
+        // 年月日の各数字を足し合わせるやり方に変更したで！
+        let sumOfDigits = 0;
+        for (const char of combinedNumber.toString()) {
+          sumOfDigits += parseInt(char);
+        }
+        let targetNumber = sumOfDigits; // これが占う数字や！
+
+        // 結果表示エリアを表示するで！
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+
+        let primeFactors = primeFactorization(targetNumber);
+        let resultText = `<p>あんたの誕生日数字を合計すると、**${targetNumber}** やで！</p>`;
+
+        let personalityText = "";
+        let workText = "";
+        let loveText = "";
+        let healthText = "";
+        let moneyText = "";
+
+        const foundPrimes = Object.keys(primeFactors)
+          .map(Number)
+          .sort((a, b) => a - b);
+
+        if (foundPrimes.length === 0 || targetNumber === 1) {
+          // 1の場合や、うまく素因数が見つからん場合（通常は発生しないはず）
+          resultText += `<p>あれ？この数字はちょっと特別やな。あんたはどんな数字も超える、**無限の可能性**を秘めた存在やで！</p>`;
+          personalityText =
+            "どんな枠にもはまらへん、自由な心の持ち主や。自分の直感を信じて進めば、道は開けるで！";
+          workText =
+            "型にはまらへん、新しい発想で道を切り開く仕事が向いてるわ。クリエイティブな分野で光るんやないか？";
+          loveText =
+            "常識にとらわれへん、自由な恋愛を求めるタイプや。お互いの個性を尊重し合える関係が理想やで。";
+          healthText =
+            "心と体のバランスが大事やで。ストレスは柔軟な思考で乗り越えるんや。";
+          moneyText =
+            "思わぬところからチャンスが転がり込むかもしれへん。固定概念にとらわれへんことが金運アップに繋がるで！";
+        } else if (isPrime(targetNumber)) {
+          // 足した数字が素数そのものの場合
+          const prime = targetNumber;
+          resultText += `<p>この数字は、**素数 ${prime}** やで！あんたは**唯一無二**の存在やな！</p>`;
+          const meaning = primeMeanings[prime] || {
+            personality:
+              "あんたはホンマに唯一無二で、純粋な心の持ち主や。自分の信念を貫き通すことで、最高の輝きを放つで！",
+            work: "誰にも真似できひんような、独自の道を開拓する仕事が向いてるわ。研究者とか、新しい分野のパイオニアになれる素質があるで。",
+            love: "一途で深い愛情を注ぐタイプや。唯一のパートナーと、かけがえのない関係を築くんやで。",
+            health:
+              "心身ともに純粋な状態を保つことが大事や。ストレスを溜め込まず、自分らしくいることが健康の秘訣や。",
+            money:
+              "独自の視点やアイデアが金運を引き寄せよるで。他人とは違う方法で、大きな成功を掴む可能性を秘めてるんや。",
+          };
+          personalityText = meaning.personality;
+          workText = meaning.work;
+          loveText = meaning.love;
+          healthText = meaning.health;
+          moneyText = meaning.money;
+        } else {
+          // 素数じゃなくて、素因数分解された場合
+          resultText += `<p>この数字は、色んな素数が組み合わさった数字やな！あんたの魅力は、**多様な素数たち**の組み合わせでできとるんや！</p>`;
+
+          let combinedPersonality = [];
+          let combinedWork = [];
+          let combinedLove = [];
+          let combinedHealth = [];
+          let combinedMoney = [];
+
+          foundPrimes.forEach((prime) => {
+            if (primeMeanings[prime]) {
+              // 各素数の意味を組み合わせる（重複は避ける、または強調する）
+              const meaning = primeMeanings[prime];
+              combinedPersonality.push(
+                meaning.personality
+                  .replace(/やで！|やな。|んやで。|んやな。/g, "")
+                  .trim()
+              );
+              combinedWork.push(
+                meaning.work
+                  .replace(/やで！|やな。|んやで。|んやな。/g, "")
+                  .trim()
+              );
+              combinedLove.push(
+                meaning.love
+                  .replace(/やで！|やな。|んやで。|んやな。/g, "")
+                  .trim()
+              );
+              combinedHealth.push(
+                meaning.health
+                  .replace(/やで！|やな。|んやで。|んやな。/g, "")
+                  .trim()
+              );
+              combinedMoney.push(
+                meaning.money
+                  .replace(/やで！|やな。|んやで。|んやな。/g, "")
+                  .trim()
+              );
+            } else {
+              // 未定義の素数が出た場合
+              resultText += `<p>ごめんやけど、素数 ${prime} の意味はまだ定義されてへんねん。けど、あんたは**未知なる可能性**を秘めとる証拠やで！</p>`;
+            }
+          });
+
+          // 各カテゴリーのメッセージを結合
+          personalityText =
+            "あんたの性格は、" +
+            combinedPersonality.join("。そして") +
+            "って感じやな！";
+          workText =
+            "仕事では、" +
+            combinedWork.join("。それに加えて") +
+            "な能力を発揮するで！";
+          loveText =
+            "恋愛では、" +
+            combinedLove.join("。さらに") +
+            "ってところが魅力やな。";
+          healthText =
+            "健康面では、" +
+            combinedHealth.join("。あと") +
+            "ってことを意識するとええで！";
+          moneyText =
+            "金運は、" +
+            combinedMoney.join("。そうやな、さらに") +
+            "ってとこに注目やで！";
+        }
+
+        document.getElementById("primeNumberResult").innerHTML = resultText;
+        document.getElementById("personality").innerHTML = personalityText;
+        document.getElementById("work").innerHTML = workText;
+        document.getElementById("love").innerHTML = loveText;
+        document.getElementById("health").innerHTML = healthText;
+        document.getElementById("money").innerHTML = moneyText;
+
+        // スクロールで結果を見れるように自動スクロールするで！
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // **ここが大事！入力データをクリアする処理やで！**
+        // ブラウザのメモリ上で処理してるから、特に入力フィールドの値をクリアするだけでOKや。
+        // ブラウザを閉じたり、ページをリロードしたりすれば、全てのデータは完全に消えるで。
+        birthdateInput.value = "";
+      }
+    </script>
+  </body>
+</html>
