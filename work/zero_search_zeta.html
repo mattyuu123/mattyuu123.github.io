@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="jp">
+
+<head>
+    <meta charset="utf-8">
+    <title>リーマンゼータ関数の零点を探す</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+<h1>リーマンゼータ関数の零点を探す</h1>
+<p>閉曲線を描くと、その中にある零点の個数がわかります。</p>
+<p>※閉曲線は反時計回りで描きましょう。時計回りだと符号がマイナスになります。積分の向きが逆になるためです。</p>
+<p>※s=1という複素数は1位の極になっているため、1は囲まないようにしましょう。囲ってしまうと実際にその閉曲線にある零点の数より1小さい数が出力されます。</p>
+<p></p>
+<canvas id="myCanvas" width="1500" height="1500"></canvas>
+<form id="zero_count_form" action="http://118.27.115.150/mattyuu/zero_count/" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="qMP7EVvdxiOKr8VUFKS5GLIpyMM7GoUrwhKcHIfIOW4K07OBbLsZHf5ZMX8zdDCi">
+    <input type="hidden" name="x_list" id="x_list" value="">
+    <input type="hidden" name="y_list" id="y_list" value="">
+</form>
+<script>
+    (function() {
+        //HTML上の canvas タグを取得
+        var canvas = document.getElementById('myCanvas');
+
+        var global_width = canvas.width;
+        var global_height = canvas.height;
+
+        var max_x = 30;
+        var max_y = 30;
+
+        var ctx = canvas.getContext('2d');
+
+        ctx.beginPath();
+        ctx.fillStyle = "#f5f5f5";
+        ctx.fillRect(0, 0, global_width, global_height);
+
+        function toCanvasCoordinate(x, y) {
+            return [x * global_width / (2 * max_x) + global_width / 2, -y * global_height / (2 * max_y) + global_height / 2];
+        }
+
+        function toCanvasCordinateX(x) {
+            return toCanvasCoordinate(x, 0)[0];
+        }
+
+        function toCanvasCordinateY(y) {
+            return toCanvasCoordinate(0, y)[1];
+        }
+
+        function toCartesianCoordinate(x, y) {
+            return [(x - global_width / 2) * 2 * max_x / global_width, -(y - global_height / 2) * 2 * max_y / global_height];
+        }
+
+        function toCartesianCordinateX(x) {
+            return toCartesianCoordinate(x, 0)[0];
+        }
+
+        function toCartesianCordinateY(y) {
+            return toCartesianCoordinate(0, y)[1];
+        }
+
+        function spacePadding(val, len) {
+            n = len - val.length;
+            for (var i = 0; i < n; i++) {
+                val = " " + val;
+            }
+            return val;
+        }
+
+        function drawAxis(ctx) {
+
+            for (y = -max_y; y <= max_y; y++) {
+                ctx.beginPath();
+                if (y == 0) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 2;
+                    ctx.font = "20px serif";
+                    ctx.fillStyle = "black";
+                    ctx.fillText(spacePadding(String(y), 3), toCanvasCordinateX(0) - 32, toCanvasCordinateY(y) + 20);
+                } else if (y % 5 == 0) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 1;
+                    ctx.font = "20px serif";
+                    ctx.fillStyle = "black";
+                    ctx.fillText(spacePadding(String(y), 3), toCanvasCordinateX(0) - 32, toCanvasCordinateY(y) - 5);
+                } else {
+                    ctx.globalAlpha = 0.5;
+                    ctx.lineWidth = 1;
+                }
+                canvasY = toCanvasCordinateY(y);
+                ctx.moveTo(0, canvasY);
+                ctx.lineTo(global_width, canvasY);
+                ctx.stroke();
+            }
+            for (x = -max_x; x <= max_x; x++) {
+                ctx.beginPath();
+                if (x == 0) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 2;
+                } else if (x % 5 == 0) {
+                    ctx.globalAlpha = 1;
+                    ctx.lineWidth = 1;
+                    ctx.font = "20px serif";
+                    ctx.fillStyle = "black";
+                    ctx.fillText(spacePadding(String(x), 3), toCanvasCordinateX(x) - 30, toCanvasCordinateY(0) + 25);
+
+                } else {
+                    ctx.globalAlpha = 0.5;
+                    ctx.lineWidth = 1;
+                }
+                canvasX = toCanvasCordinateX(x);
+                ctx.moveTo(canvasX, 0);
+                ctx.lineTo(canvasX, global_height);
+                ctx.stroke();
+            }
+        }
+
+        drawAxis(ctx);
+
+        var colors = ["red", "green", "blue", "darkmagenta", "chocolate", "slateblue", "darkcyan", "orangered"];
+        var counter = 0
+
+
+        //各イベントに紐づけ
+        canvas.addEventListener('mousemove', onMove, false);
+        canvas.addEventListener('mousedown', drawStart, false);
+        canvas.addEventListener('mouseup', drawEnd, false);
+        canvas.addEventListener('mouseout', drawEnd, false);
+
+        canvas.addEventListener('touchmove', onMove2, false);
+        canvas.addEventListener('touchstart', drawStart2, false);
+        canvas.addEventListener('touchend', drawEnd2, false);
+
+        //マウス動いていて、かつ左クリック時に発火。
+        function onMove(e) {
+            if (e.buttons === 1 || e.witch === 1) {
+                var rect = e.target.getBoundingClientRect();
+                var x = ~~(e.clientX - rect.left);
+                var y = ~~(e.clientY - rect.top);
+                draw(prev_x, prev_y, x, y);
+            };
+        };
+
+        function onMove2(e) {
+            e.preventDefault()
+            var touchX = e.changedTouches[0].pageX;
+            var touchY = e.changedTouches[0].pageY;
+            var clientRect = canvas.getBoundingClientRect();
+            var positionX = clientRect.left + window.pageXOffset;
+            var positionY = clientRect.top + window.pageYOffset;
+            x = touchX - positionX;
+            y = touchY - positionY;
+            draw(prev_x, prev_y, x, y);
+        };
+
+        //マウスが左クリックされると発火。
+        function drawStart(e) {
+            if (e.button === 0) {
+                var rect = e.target.getBoundingClientRect();
+                initial_x = ~~(e.clientX - rect.left);
+                initial_y = ~~(e.clientY - rect.top);
+            }
+        };
+
+        function drawStart2(e) {
+            e.preventDefault()
+            var touchX = e.changedTouches[0].pageX;
+            var touchY = e.changedTouches[0].pageY;
+            var clientRect = canvas.getBoundingClientRect();
+            var positionX = clientRect.left + window.pageXOffset;
+            var positionY = clientRect.top + window.pageYOffset;
+            initial_x = touchX - positionX;
+            initial_y = touchY - positionY;
+        };
+
+        var initial_x = -1
+        var initial_y = -1
+
+        var prev_x = -1;
+        var prev_y = -1;
+
+        var x_list = []
+        var y_list = []
+
+        function draw(from_x, from_y, to_x, to_y) {
+            ctx.beginPath();
+            ctx.globalAlpha = 1;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = colors[counter % colors.length];
+            ctx.fillStyle = colors[counter % colors.length];
+
+            if (prev_x != -1) {
+                ctx.moveTo(from_x, from_y);
+                ctx.lineTo(to_x, to_y);
+                ctx.stroke();
+            }
+            prev_x = to_x;
+            prev_y = to_y;
+            x_list.push(toCartesianCordinateX(to_x))
+            y_list.push(toCartesianCordinateY(to_y))
+        };
+
+        function drawEnd(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = ~~(e.clientX - rect.left);
+            var y = ~~(e.clientY - rect.top);
+            // draw(x, y, initial_x, initial_y);
+            var zero_count = ''
+            if (x_list.length > 10) {
+                $("#x_list").val(x_list);
+                $("#y_list").val(y_list);
+                $.ajax({
+                    url: $("#zero_count_form").attr('action'), // 通信先のURL
+                    type: "POST", // 使用するHTTPメソッド
+                    data: $("#zero_count_form").serialize(), // 送信するデータ
+                    dataType: "text", // 応答のデータの種類 
+                    timespan: 1000 // 通信のタイムアウトの設定(ミリ秒)
+
+                }).done(function(rtn_data, textStatus, jqXHR) {
+                    zero_count = rtn_data;
+                    ctx.font = "48px sans-serif";
+                    ctx.fillText(zero_count, x, y);
+                });
+            }
+
+            prev_x = -1
+            prev_y = -1
+            counter++;
+
+            x_list = []
+            y_list = []
+        }
+
+        function drawEnd2(e) {
+            e.preventDefault();
+            var touchX = e.changedTouches[0].pageX;
+            var touchY = e.changedTouches[0].pageY;
+            var clientRect = canvas.getBoundingClientRect();
+            var positionX = clientRect.left + window.pageXOffset;
+            var positionY = clientRect.top + window.pageYOffset;
+            x = touchX - positionX;
+            y = touchY - positionY;
+            // draw(x, y, initial_x, initial_y);
+            var zero_count = ''
+            if (x_list.length > 10) {
+                $("#x_list").val(x_list);
+                $("#y_list").val(y_list);
+                $.ajax({
+                    url: $("#zero_count_form").attr('action'), // 通信先のURL
+                    type: "POST", // 使用するHTTPメソッド
+                    data: $("#zero_count_form").serialize(), // 送信するデータ
+                    dataType: "text", // 応答のデータの種類 
+                    timespan: 1000 // 通信のタイムアウトの設定(ミリ秒)
+
+                }).done(function(rtn_data, textStatus, jqXHR) {
+                    zero_count = rtn_data;
+                    ctx.font = "48px sans-serif";
+                    ctx.fillText(zero_count, x, y);
+                });
+            }
+
+            prev_x = -1
+            prev_y = -1
+            counter++;
+
+            x_list = []
+            y_list = []
+        }
+
+    })();
+</script>
