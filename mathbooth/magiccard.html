@@ -1,11 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数当てマジックの遊び方</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background-color: #f5f5f5;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    img.card {
+      max-width: 100%;
+      height: auto;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .card-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .card-flex img {
+      flex: 1 1 200px;
+      max-width: 200px;
+    }
+  </style>
 </head>
 <body>
-    マジックカードの遊び方です
+  <div class="container">
+    <h1>数当てマジックの遊び方</h1>
+    <div class="section">
+      <p>
+        このカードマジックでは、相手の方に<strong>1〜31の好きな数</strong>を思い浮かべてもらい、
+        その数が含まれているカードを教えてもらうだけで、瞬時に相手の方が思い浮かべた数を当てることができます！
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🔢 手順</h2>
+      <ol>
+        <li>相手の方に5枚のカードを渡します。</li>
+        <li>「1〜31の中から好きな数を1つ思い浮かべてください。」と伝えます。</li>
+        <li>その後、「その数が入ったカードだけ私にください。」と伝えます。</li>
+        <li>受け取ったカードの左上の数を足してください。その合計が相手の方が思い浮かべた数になります。</li>
+        <li>「あなたが思い浮かべた数は〇です！」と伝えます。</li>
+        <li>きっと驚くことでしょう🥳</li>
+      </ol>
+      <div>
+        <dt>マル秘テク</dt>
+        <dd>一気にカードをもらうと足し算が大変なので、入っているカードを1枚ずつもらいながら足すのが良いです。そうすると、最後のカードをもらった瞬間に相手の数を言い当てることができます！</dd>
+        <dd>数が入っているカードが4枚あると、足し算が大変です。その場合は31から入っていないカードの左上の数を引きましょう。</dd>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🃏 カード一覧</h2>
+      <div class="card-flex">
+        <img src="img/card1.png" alt="カード1" class="card" />
+        <img src="img/card2.png" alt="カード2" class="card" />
+        <img src="img/card3.png" alt="カード3" class="card" />
+        <img src="img/card4.png" alt="カード4" class="card" />
+        <img src="img/card5.png" alt="カード5" class="card" />
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🧠 なぜ当たるの？</h2>
+      <p>
+        実はこのマジック、<strong>2進数</strong>という仕組みを使っています。<br />
+        1〜31のすべての数は、2進数で表すと「0と1」だけで構成されます。<br />
+        各カードには、2進数で“その桁が1”になる数だけが含まれているので、選んだカードの左上の数字（＝ビットの重み）を足せば、元の数が復元されるというわけです！
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🎁 持ち帰って遊ぼう！</h2>
+      <p>
+        ご自宅でもこのカードを使って、友達や家族に数字当てマジックを披露してみましょう！<br />
+        楽しみながら、コンピュータや暗号にも使われる数学の仕組みに触れることができます。
+      </p>
+    </div>
+  </div>
 </body>
 </html>
