@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数学ブース - RSA暗号</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: linear-gradient(to bottom right, #cce4f6, #ffffff, #c3f7cc);
+      color: #333;
+    }
+    header {
+      background-color: white;
+      padding: 1em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    header h1 { color: #1e3a8a; margin: 0; font-size: 1.25rem; }
+    nav button {
+      margin-left: 0.5em;
+      padding: 0.5em 0.9em;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    section {
+      max-width: 980px;
+      margin: 2em auto;
+      padding: 1em 1.2em;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    h2 { margin-top: 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    label { display: inline-flex; align-items: center; gap: 0.4rem; }
+    input[type="number"], input[type="text"] { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 6px; width: 200px; }
+    input[readonly] { background: #fafafa; }
+    button.primary { background: #1e3a8a; color: white; border: none; padding: 0.6rem 0.9rem; border-radius: 8px; cursor: pointer; }
+    button.ghost { background: white; border: 1px solid #ccc; padding: 0.5rem 0.8rem; border-radius: 8px; cursor: pointer; }
+    small.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    details { background: #f7fafc; padding: 0.8rem; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .keybox { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.8rem; }
+    .muted { color: #666; }
+    .warn { color: #b45309; }
+    .ok { color: #065f46; }
+    footer { margin: 2rem 0; text-align: center; color: #666; font-size: 0.9rem; }
+    .sep { height: 1px; background: #eee; margin: 1rem 0; }
+    .stack { display: grid; gap: 0.6rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>体感する数学</h1>
+    <nav>
+      <button onclick="location.reload()">リセット</button>
+    </nav>
+  </header>
+
+  <section>
+    <h2>🔐 RSA暗号を体験する</h2>
+    <p class="muted">2つの素数 <em>p</em> と <em>q</em> を入力して鍵を生成し、数値の平文を暗号化・復号してみましょう。</p>
+
+    <div class="grid">
+      <div class="stack">
+        <h3>1) 素数の入力</h3>
+        <div class="row">
+          <label>p：<input id="pInput" type="text" inputmode="numeric" placeholder="例) 61" value="61"></label>
+          <label>q：<input id="qInput" type="text" inputmode="numeric" placeholder="例) 53" value="53"></label>
+          <button class="primary" onclick="generateKeys()">鍵を生成</button>
+        </div>
+        <small class="muted">※ 教材用なので小さめの素数でOKです。大きすぎると遅くなります。</small>
+
+        <div id="keyStatus" class="stack"></div>
+
+        <div class="keybox">
+          <div><strong>公開鍵 (n, e)</strong></div>
+          <div class="row"><label>n：<input id="nOut" type="text" readonly style="width: 100%"></label></div>
+          <div class="row"><label>e：<input id="eOut" type="text" readonly></label></div>
+          <div class="sep"></div>
+          <div><strong>秘密鍵 (n, d)</strong></div>
+          <div class="row"><label>d：<input id="dOut" type="text" readonly style="width: 100%"></label></div>
+          <div class="sep"></div>
+          <div class="row"><label>φ(n)：<input id="phiOut" type="text" readonly style="width: 100%"></label></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <h3>2) 暗号化・復号</h3>
+        <div class="row">
+          <label>平文（数値 m）：<input id="mInput" type="text" inputmode="numeric" placeholder="例) 42"></label>
+          <button class="ghost" onclick="encryptMsg()">暗号化</button>
+        </div>
+        <div class="row">
+          <label>暗号文（数値 c）：<input id="cInput" type="text" inputmode="numeric" placeholder="暗号化の結果が入ります"></label>
+          <button class="ghost" onclick="decryptMsg()">復号</button>
+        </div>
+        <small class="muted">※ 条件：0 ≤ m < n を満たす必要があります。</small>
+        <div id="ioStatus" class="stack"></div>
+      </div>
+    </div>
+
+    <details style="margin-top:1rem;">
+      <summary>説明を表示</summary>
+      <div class="stack">
+        <div>1. n = p×q、φ = (p−1)(q−1)</div>
+        <div>2. e は φ と互いに素な公開指数（既定は 65537）。</div>
+        <div>3. d は e の φ に関する逆元（ed ≡ 1 (mod φ)）。</div>
+        <div>4. 暗号化：c ≡ m^e mod n、復号：m ≡ c^d mod n。</div>
+      </div>
+    </details>
+
+    <footer>© 2025 数学ブース</footer>
+  </section>
+
+  <script>
+    // ===== Utility: BigInt helpers =====
+    const toBigInt = (v) => {
+      if (typeof v === 'bigint') return v;
+      if (typeof v === 'number') return BigInt(v);
+      const s = String(v).trim();
+      if (!/^[-+]?\d+$/.test(s)) throw new Error('数値ではありません');
+      return BigInt(s);
+    };
+
+    const abs = (x) => (x < 0n ? -x : x);
+
+    const gcd = (a, b) => {
+      a = abs(toBigInt(a)); b = abs(toBigInt(b));
+      while (b) { const t = a % b; a = b; b = t; }
+      return a;
+    };
+
+    // 拡張ユークリッド: 返り値は [g, x, y] (ax + by = g)
+    const egcd = (a, b) => {
+      a = toBigInt(a); b = toBigInt(b);
+      let x = 1n, y = 0n, u = 0n, v = 1n;
+      while (b) {
+        const q = a / b; // 商
+        [a, b] = [b, a - q * b];
+        [x, u] = [u, x - q * u];
+        [y, v] = [v, y - q * v];
+      }
+      return [a, x, y];
+    };
+
+    // 逆元: a^{-1} mod m
+    const modInv = (a, m) => {
+      const [g, x] = egcd(a % m + m, m);
+      if (g !== 1n) throw new Error('逆元が存在しません（互いに素でない）');
+      return (x % m + m) % m;
+    };
+
+    // a^b mod m（繰り返し2乗法）
+    const modPow = (a, b, m) => {
+      a = (toBigInt(a) % m + m) % m;
+      b = toBigInt(b);
+      let res = 1n;
+      while (b > 0n) {
+        if (b & 1n) res = (res * a) % m;
+        a = (a * a) % m;
+        b >>= 1n;
+      }
+      return res;
+    };
+
+    // 簡易素数判定（小さい数向け + いくつかの底でMiller-Rabin）
+    const isProbablePrime = (n) => {
+      n = toBigInt(n);
+      if (n < 2n) return false;
+      const small = [2n,3n,5n,7n,11n,13n,17n,19n,23n,29n,31n,37n];
+      if (small.includes(n)) return true;
+      for (const p of small) { if (n % p === 0n) return false; }
+      // n-1 = d * 2^s
+      let d = n - 1n, s = 0n;
+      while ((d & 1n) === 0n) { d >>= 1n; s++; }
+      const bases = [2n, 7n, 61n]; // 32bit未満確定、教材用途には十分
+      const check = (a) => {
+        if (a % n === 0n) return true;
+        let x = modPow(a, d, n);
+        if (x === 1n || x === n - 1n) return true;
+        for (let r = 1n; r < s; r++) {
+          x = (x * x) % n;
+          if (x === n - 1n) return true;
+        }
+        return false;
+      };
+      return bases.every(check);
+    };
+
+    // ===== UI State =====
+    let state = {
+      p: null, q: null, n: null, phi: null, e: null, d: null
+    };
+
+    const setText = (id, v) => document.getElementById(id).value = v == null ? '' : String(v);
+    const pushMsg = (id, html) => {
+      const box = document.getElementById(id);
+      box.innerHTML = html + box.innerHTML; // 上に積む
+    };
+    const clearMsg = (id) => { document.getElementById(id).innerHTML = ''; };
+
+    function generateKeys() {
+      clearMsg('keyStatus');
+      try {
+        const p = toBigInt(document.getElementById('pInput').value);
+        const q = toBigInt(document.getElementById('qInput').value);
+        if (p === q) throw new Error('p と q は異なる素数にしてください');
+        if (!isProbablePrime(p)) throw new Error('p が素数ではありません（または不適切です）');
+        if (!isProbablePrime(q)) throw new Error('q が素数ではありません（または不適切です）');
+
+        const n = p * q;
+        const phi = (p - 1n) * (q - 1n);
+
+        // 既定の e
+        let e = 65537n;
+        if (gcd(e, phi) !== 1n) {
+          // φと互いに素になるまで奇数を探す（教材用途、簡易）
+          e = 3n;
+          while (e < phi && gcd(e, phi) !== 1n) e += 2n;
+          if (e >= phi) throw new Error('互いに素な公開指数 e を見つけられませんでした');
+        }
+        const d = modInv(e, phi);
+
+        state = { p, q, n, phi, e, d };
+        setText('nOut', n);
+        setText('eOut', e);
+        setText('dOut', d);
+        setText('phiOut', phi);
+
+        pushMsg('keyStatus', `<div class="ok">鍵生成に成功しました</div>`);
+        clearMsg('ioStatus');
+      } catch (err) {
+        pushMsg('keyStatus', `<div class="warn">${err.message}</div>`);
+      }
+    }
+
+    function encryptMsg() {
+      clearMsg('ioStatus');
+      try {
+        const { n, e } = state;
+        if (!n || !e) throw new Error('先に鍵を生成してください');
+        const m = toBigInt(document.getElementById('mInput').value);
+        if (m < 0n) throw new Error('平文 m は 0 以上にしてください');
+        if (m >= n) throw new Error(`平文 m は n より小さくしてください（m < n）。現在 n = ${n}`);
+        const c = modPow(m, e, n);
+        setText('cInput', c);
+        pushMsg('ioStatus', `<div class="ok">暗号化しました： c = m^e mod n</div>`);
+      } catch (err) {
+        pushMsg('ioStatus', `<div class="warn">${err.message}</div>`);
+      }
+    }
+
+    function decryptMsg() {
+      clearMsg('ioStatus');
+      try {
+        const { n, d } = state;
+        if (!n || !d) throw new Error('先に鍵を生成してください');
+        const c = toBigInt(document.getElementById('cInput').value);
+        if (c < 0n) throw new Error('暗号文 c は 0 以上にしてください');
+        if (c >= n) throw new Error(`暗号文 c は n より小さくしてください（c < n）。現在 n = ${n}`);
+        const m = modPow(c, d, n);
+        setText('mInput', m);
+        pushMsg('ioStatus', `<div class="ok">復号しました： m = c^d mod n</div>`);
+      } catch (err) {
+        pushMsg('ioStatus', `<div class="warn">${err.message}</div>`);
+      }
+    }
+  </script>
+</body>
+</html>
+
