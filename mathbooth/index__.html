@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>体感する数学</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(to bottom right, #cce4f6, #ffffff, #c3f7cc);
+      color: #333;
+    }
+    header {
+      background-color: white;
+      padding: 1em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      color: #1e3a8a;
+    }
+    nav button {
+      margin-left: 1em;
+      padding: 0.5em 1em;
+      border: 1px solid #ccc;
+      background: white;
+      cursor: pointer;
+    }
+    section {
+      max-width: 800px;
+      margin: 2em auto;
+      padding: 1em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    footer {
+      margin-top: 4em;
+      padding: 2em;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>体感する数学</h1>
+    <nav>
+      <button onclick="goHome()">トップ</button>
+      <button onclick="goApps()">アプリ一覧</button>
+      <button onclick="goAbout()">このプロジェクトについて</button>
+    </nav>
+  </header>
+
+  <section id="app-content">
+    <p>ここに各アプリのコンテンツが入ります。</p>
+  </section>
+
+  <footer>
+    © 2025 体感する数学プロジェクト
+  </footer>
+
+  <script>
+    function goHome() {
+      document.getElementById("app-content").innerHTML = "<p>ホーム画面です。アプリを選択してください。</p>";
+    }
+    function goApps() {
+      document.getElementById("app-content").innerHTML = "<p>アプリ一覧：<ul><li>素数ハンター</li><li>確率シミュレータ</li><li>フラクタル描画</li></ul></p>";
+    }
+    function goAbout() {
+      document.getElementById("app-content").innerHTML = "<p>このプロジェクトは、数学を体験として楽しく学ぶためのWebアプリ集です。</p>";
+    }
+  </script>
+</body>
+</html>
