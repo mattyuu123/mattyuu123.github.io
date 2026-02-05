@@ -11,23 +11,29 @@
         background: linear-gradient(to bottom right, #cce4f6, #ffffff, #c3f7cc);
         color: #333;
       }
-      header {
+      /* 共通ヘッダ / ホームボタン */
+      .site-header {
         background-color: white;
-        padding: 1em 2em;
+        padding: 1em 1.25em;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
       }
-      header h1 {
+      .site-header h1 {
         color: #1e3a8a;
+        margin: 0;
+        font-size: 1.15rem;
       }
-      nav button {
-        margin-left: 1em;
-        padding: 0.5em 1em;
-        border: 1px solid #ccc;
-        background: white;
-        cursor: pointer;
+      .home-btn {
+        text-decoration: none;
+        display: inline-block;
+        padding: 0.45em 0.8em;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #1e3a8a;
+        font-weight: 600;
       }
       section {
         max-width: 900px;
@@ -53,8 +59,11 @@
     </style>
   </head>
   <body>
-    <header>
+    <header class="site-header">
       <h1>体感する数学</h1>
+      <nav>
+        <a class="home-btn" href="index.html">ホーム</a>
+      </nav>
     </header>
 
     <section id="app-content">

@@ -1,176 +1,383 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>体感する数学 - ハイポトロコイド</title>
-  <style>
-    :root{ --bg1:#cce4f6; --bg2:#ffffff; --bg3:#c3f7cc; --ink:#333; --primary:#1e3a8a; }
-    *{ box-sizing: border-box; }
-    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, Helvetica, Arial; color:var(--ink); background:linear-gradient(to bottom right, var(--bg1), var(--bg2), var(--bg3)); }
-    header{ background:#fff; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 6px rgba(0,0,0,.06); }
-    header h1{ margin:0; color:var(--primary); font-size:1.25rem; }
-    section{ max-width:1000px; margin:1.5rem auto; background:#fff; border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.08); padding:1rem; }
-    .grid{ display:grid; gap:1rem; grid-template-columns: 1fr 1fr; }
-    @media (max-width:860px){ .grid{ grid-template-columns: 1fr; } }
-    .controls{ display:grid; gap:.8rem; }
-    .row{ display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; }
-    label{ display:inline-flex; align-items:center; gap:.4rem; }
-    input[type="number"], input[type="range"], input[type="text"]{ padding:.45rem .6rem; border:1px solid #d0d7de; border-radius:8px; }
-    input[type="range"]{ width:220px; }
-    .btn{ padding:.55rem .9rem; border-radius:10px; cursor:pointer; border:1px solid #d0d7de; background:#fff; }
-    .btn.primary{ background:var(--primary); color:#fff; border:none; }
-    .btn.warn{ border-color:#f3b; }
-    .muted{ color:#666; }
-    .swatch{ width:1rem; height:1rem; border-radius:50%; border:1px solid #ccc; display:inline-block; vertical-align:middle; }
-    canvas{ display:block; width:100%; max-width:100%; border:1px solid #aaa; background:#fafafa; border-radius:12px; }
-    .list{ font-size:.92rem; }
-    .list table{ width:100%; border-collapse:collapse; }
-    .list th, .list td{ padding:.4rem .5rem; border-bottom:1px solid #eee; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>体感する数学</h1>
-    <nav>
-      <button class="btn" onclick="location.reload()">リセット</button>
-    </nav>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>体感する数学 - ハイポトロコイド</title>
+    <style>
+      /* 共通ヘッダ / ホームボタン */
+      .site-header {
+        background: #fff;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      }
+      .site-header h1 {
+        margin: 0;
+        color: var(--primary);
+        font-size: 1.15rem;
+      }
+      .home-btn {
+        text-decoration: none;
+        display: inline-block;
+        padding: 0.45rem 0.8rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: var(--primary);
+        font-weight: 600;
+      }
+      :root {
+        --bg1: #cce4f6;
+        --bg2: #ffffff;
+        --bg3: #c3f7cc;
+        --ink: #333;
+        --primary: #1e3a8a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Noto Sans JP,
+          Helvetica,
+          Arial;
+        color: var(--ink);
+        background: linear-gradient(
+          to bottom right,
+          var(--bg1),
+          var(--bg2),
+          var(--bg3)
+        );
+      }
+      header {
+        background: #fff;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      }
+      header h1 {
+        margin: 0;
+        color: var(--primary);
+        font-size: 1.25rem;
+      }
+      section {
+        max-width: 1000px;
+        margin: 1.5rem auto;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        padding: 1rem;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr 1fr;
+      }
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .controls {
+        display: grid;
+        gap: 0.8rem;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+      }
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      input[type="number"],
+      input[type="range"],
+      input[type="text"] {
+        padding: 0.45rem 0.6rem;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+      }
+      input[type="range"] {
+        width: 220px;
+      }
+      .btn {
+        padding: 0.55rem 0.9rem;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1px solid #d0d7de;
+        background: #fff;
+      }
+      .btn.primary {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+      }
+      .btn.warn {
+        border-color: #f3b;
+      }
+      .muted {
+        color: #666;
+      }
+      .swatch {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        border: 1px solid #aaa;
+        background: #fafafa;
+        border-radius: 12px;
+      }
+      .list {
+        font-size: 0.92rem;
+      }
+      .list table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .list th,
+      .list td {
+        padding: 0.4rem 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>体感する数学</h1>
+      <nav>
+        <a class="home-btn" href="index.html">ホーム</a>
+        <button class="btn" onclick="location.reload()">リセット</button>
+      </nav>
+    </header>
 
-  <section>
-    <h2>🌀 ハイポトロコイド（Hypotrochoid）を体験する</h2>
-    <p class="muted">固定円の内側を小円が転がり、その小円の内部の点が描く軌跡です。<br>入力したパラメータで<strong>曲線を追加</strong>すると、キャンバスに重ね描きされます（クリアするまで残ります）。</p>
+    <section>
+      <h2>🌀 ハイポトロコイド（Hypotrochoid）を体験する</h2>
+      <p class="muted">
+        固定円の内側を小円が転がり、その小円の内部の点が描く軌跡です。<br />入力したパラメータで<strong>曲線を追加</strong>すると、キャンバスに重ね描きされます（クリアするまで残ります）。
+      </p>
 
-    <div class="grid">
-      <div class="controls">
-        <h3>1) パラメータ</h3>
-        <div class="row">
-          <label>固定円 半径 <em>R</em>：<input id="R" type="number" value="220" min="1" step="1"></label>
-          <label>小円 半径 <em>r</em>：<input id="r" type="number" value="80" min="1" step="1"></label>
-        </div>
-        <div class="row">
-          <label>点の位置（小円半径に対する%）：<input id="ratio" type="number" value="60" min="0" max="100" step="1"></label>
-          <input id="ratioRange" type="range" value="60" min="0" max="100" step="1" oninput="ratio.value=this.value" onchange="ratio.value=this.value">
-        </div>
-        <div class="row">
-          <label>線幅：<input id="lw" type="number" value="1.8" min="0.5" max="4" step="0.1"></label>
-          <label>不透明度：<input id="alpha" type="number" value="0.95" min="0.1" max="1" step="0.05"></label>
-          <label>色：<input id="color" type="text" placeholder="自動（HSL）"></label>
-        </div>
-        <div class="row">
-          <button class="btn primary" onclick="addCurve()">曲線を追加</button>
-          <button class="btn" onclick="clearCanvas()">クリア</button>
-        </div>
-        <details>
-          <summary>式と補足</summary>
-          <div class="muted">
-            x(θ) = (R − r)cosθ + d cos\(\frac{R−r}{r}θ\)<br>
-            y(θ) = (R − r)sinθ − d sin\(\frac{R−r}{r}θ\), ただし d = (ratio/100)·r
-            <div>閉曲線になる最小区間は θ ∈ [0, 2π·r/gcd(R, r)]（R, r は整数想定）。</div>
+      <div class="grid">
+        <div class="controls">
+          <h3>1) パラメータ</h3>
+          <div class="row">
+            <label
+              >固定円 半径 <em>R</em>：<input
+                id="R"
+                type="number"
+                value="220"
+                min="1"
+                step="1"
+            /></label>
+            <label
+              >小円 半径 <em>r</em>：<input
+                id="r"
+                type="number"
+                value="80"
+                min="1"
+                step="1"
+            /></label>
           </div>
-        </details>
+          <div class="row">
+            <label
+              >点の位置（小円半径に対する%）：<input
+                id="ratio"
+                type="number"
+                value="60"
+                min="0"
+                max="100"
+                step="1"
+            /></label>
+            <input
+              id="ratioRange"
+              type="range"
+              value="60"
+              min="0"
+              max="100"
+              step="1"
+              oninput="ratio.value = this.value"
+              onchange="ratio.value = this.value"
+            />
+          </div>
+          <div class="row">
+            <label
+              >線幅：<input
+                id="lw"
+                type="number"
+                value="1.8"
+                min="0.5"
+                max="4"
+                step="0.1"
+            /></label>
+            <label
+              >不透明度：<input
+                id="alpha"
+                type="number"
+                value="0.95"
+                min="0.1"
+                max="1"
+                step="0.05"
+            /></label>
+            <label
+              >色：<input id="color" type="text" placeholder="自動（HSL）"
+            /></label>
+          </div>
+          <div class="row">
+            <button class="btn primary" onclick="addCurve()">曲線を追加</button>
+            <button class="btn" onclick="clearCanvas()">クリア</button>
+          </div>
+          <details>
+            <summary>式と補足</summary>
+            <div class="muted">
+              x(θ) = (R − r)cosθ + d cos\(\frac{R−r}{r}θ\)<br />
+              y(θ) = (R − r)sinθ − d sin\(\frac{R−r}{r}θ\), ただし d =
+              (ratio/100)·r
+              <div>
+                閉曲線になる最小区間は θ ∈ [0, 2π·r/gcd(R, r)]（R, r
+                は整数想定）。
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div>
+          <canvas id="cv" width="900" height="600"></canvas>
+          <div class="list" id="list"></div>
+        </div>
       </div>
+    </section>
 
-      <div>
-        <canvas id="cv" width="900" height="600"></canvas>
-        <div class="list" id="list"></div>
-      </div>
-    </div>
-  </section>
+    <script>
+      const cv = document.getElementById("cv");
+      const ctx = cv.getContext("2d");
+      let curves = []; // {R,r,ratio,d,color,lw,alpha}
 
-  <script>
-    const cv = document.getElementById('cv');
-    const ctx = cv.getContext('2d');
-    let curves = []; // {R,r,ratio,d,color,lw,alpha}
-
-    function gcdInt(a,b){ a=Math.abs(Math.round(a)); b=Math.abs(Math.round(b)); while(b){ [a,b]=[b,a%b]; } return a||1; }
-
-    function autoColor(i){
-      const hue = (i*67)%360; // 目に優しい分散
-      return `hsl(${hue} 90% 45%)`;
-    }
-
-    function addCurve(){
-      const R = Number(document.getElementById('R').value);
-      const r = Number(document.getElementById('r').value);
-      const ratio = Number(document.getElementById('ratio').value);
-      const lw = Number(document.getElementById('lw').value);
-      const alpha = Number(document.getElementById('alpha').value);
-      const colorInput = document.getElementById('color').value.trim();
-
-      if(!(R>0&&r>0)) return alert('R と r は正の数にしてください');
-      if(ratio<0||ratio>100) return alert('比率は 0〜100 の範囲で指定してください');
-      if(r>=R) alert('注意: r < R を推奨します（小円が固定円の内側で転がる設定）');
-
-      const d = (ratio/100)*r;
-      const color = colorInput || autoColor(curves.length);
-
-      const entry = {R,r,ratio,d,color,lw,alpha};
-      curves.push(entry);
-      redraw();
-      updateList();
-    }
-
-    function clearCanvas(){
-      curves = [];
-      ctx.clearRect(0,0,cv.width,cv.height);
-      updateList();
-    }
-
-    function redraw(){
-      ctx.clearRect(0,0,cv.width,cv.height);
-      for(let i=0;i<curves.length;i++){
-        drawHypotrochoid(curves[i]);
+      function gcdInt(a, b) {
+        a = Math.abs(Math.round(a));
+        b = Math.abs(Math.round(b));
+        while (b) {
+          [a, b] = [b, a % b];
+        }
+        return a || 1;
       }
-    }
 
-    function drawHypotrochoid({R,r,d,color,lw,alpha}){
-      // スケール：曲線の最大半径 (R-r)+d をキャンバスに収める
-      const maxRad = Math.max(1e-9, (R - r) + Math.abs(d));
-      const scale = 0.46 * Math.min(cv.width, cv.height) / maxRad;
-      const cx = cv.width/2, cy = cv.height/2;
-
-      // 閉曲線の終了角：2π * r / gcd(R, r)
-      const turns = (2*Math.PI) * (r / gcdInt(R, r));
-      const step = Math.PI/720; // 分解能（細かくしたいときは小さく）
-
-      ctx.save();
-      ctx.lineWidth = lw;
-      ctx.globalAlpha = alpha;
-      ctx.strokeStyle = color;
-      ctx.beginPath();
-
-      for(let t=0; t<=turns+1e-9; t+=step){
-        const x = (R - r) * Math.cos(t) + d * Math.cos(((R - r)/r) * t);
-        const y = (R - r) * Math.sin(t) - d * Math.sin(((R - r)/r) * t);
-        const X = cx + x*scale;
-        const Y = cy - y*scale; // 画面は y 下向き
-        if(t===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+      function autoColor(i) {
+        const hue = (i * 67) % 360; // 目に優しい分散
+        return `hsl(${hue} 90% 45%)`;
       }
-      ctx.stroke();
-      ctx.restore();
-    }
 
-    function updateList(){
-      const box = document.getElementById('list');
-      if(curves.length===0){ box.innerHTML = '<p class="muted">（追加した曲線のリストがここに表示されます）</p>'; return; }
-      const rows = curves.map((c,i)=>`<tr>
-          <td>#${i+1}</td>
+      function addCurve() {
+        const R = Number(document.getElementById("R").value);
+        const r = Number(document.getElementById("r").value);
+        const ratio = Number(document.getElementById("ratio").value);
+        const lw = Number(document.getElementById("lw").value);
+        const alpha = Number(document.getElementById("alpha").value);
+        const colorInput = document.getElementById("color").value.trim();
+
+        if (!(R > 0 && r > 0)) return alert("R と r は正の数にしてください");
+        if (ratio < 0 || ratio > 100)
+          return alert("比率は 0〜100 の範囲で指定してください");
+        if (r >= R)
+          alert("注意: r < R を推奨します（小円が固定円の内側で転がる設定）");
+
+        const d = (ratio / 100) * r;
+        const color = colorInput || autoColor(curves.length);
+
+        const entry = { R, r, ratio, d, color, lw, alpha };
+        curves.push(entry);
+        redraw();
+        updateList();
+      }
+
+      function clearCanvas() {
+        curves = [];
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        updateList();
+      }
+
+      function redraw() {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        for (let i = 0; i < curves.length; i++) {
+          drawHypotrochoid(curves[i]);
+        }
+      }
+
+      function drawHypotrochoid({ R, r, d, color, lw, alpha }) {
+        // スケール：曲線の最大半径 (R-r)+d をキャンバスに収める
+        const maxRad = Math.max(1e-9, R - r + Math.abs(d));
+        const scale = (0.46 * Math.min(cv.width, cv.height)) / maxRad;
+        const cx = cv.width / 2,
+          cy = cv.height / 2;
+
+        // 閉曲線の終了角：2π * r / gcd(R, r)
+        const turns = 2 * Math.PI * (r / gcdInt(R, r));
+        const step = Math.PI / 720; // 分解能（細かくしたいときは小さく）
+
+        ctx.save();
+        ctx.lineWidth = lw;
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+
+        for (let t = 0; t <= turns + 1e-9; t += step) {
+          const x = (R - r) * Math.cos(t) + d * Math.cos(((R - r) / r) * t);
+          const y = (R - r) * Math.sin(t) - d * Math.sin(((R - r) / r) * t);
+          const X = cx + x * scale;
+          const Y = cy - y * scale; // 画面は y 下向き
+          if (t === 0) ctx.moveTo(X, Y);
+          else ctx.lineTo(X, Y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function updateList() {
+        const box = document.getElementById("list");
+        if (curves.length === 0) {
+          box.innerHTML =
+            '<p class="muted">（追加した曲線のリストがここに表示されます）</p>';
+          return;
+        }
+        const rows = curves
+          .map(
+            (c, i) => `<tr>
+          <td>#${i + 1}</td>
           <td><span class="swatch" style="background:${c.color}"></span></td>
           <td>R=${c.R}, r=${c.r}, ratio=${c.ratio}%</td>
           <td>線幅 ${c.lw}</td>
           <td>α=${c.alpha}</td>
-        </tr>`).join('');
-      box.innerHTML = `<table><thead><tr><th>番号</th><th>色</th><th>パラメータ</th><th>描画</th><th>透明</th></tr></thead><tbody>${rows}</tbody></table>`;
-    }
+        </tr>`,
+          )
+          .join("");
+        box.innerHTML = `<table><thead><tr><th>番号</th><th>色</th><th>パラメータ</th><th>描画</th><th>透明</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }
 
-    // スライダーと数値を同期
-    const ratio = document.getElementById('ratio');
-    const ratioRange = document.getElementById('ratioRange');
-    ratio.addEventListener('input', ()=> ratioRange.value = ratio.value);
+      // スライダーと数値を同期
+      const ratio = document.getElementById("ratio");
+      const ratioRange = document.getElementById("ratioRange");
+      ratio.addEventListener("input", () => (ratioRange.value = ratio.value));
 
-    // 初期表示
-    updateList();
-  </script>
-</body>
+      // 初期表示
+      updateList();
+    </script>
+  </body>
 </html>
